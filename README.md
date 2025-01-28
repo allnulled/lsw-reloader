@@ -33,7 +33,9 @@ const reloader = require("@allnulled/lsw-reloader/reloader.js");
 
 await reloader({
     directory: __dirname,
-    port: 5000
+    port: 5000,
+    files: ["**/*.js"],
+    filter: filepath => true
 });
 ```
 
@@ -42,3 +44,4 @@ And with this, you set up a server, with socket.io, listening for browsers that 
 ## CLI
 
 No CLI right now.
+

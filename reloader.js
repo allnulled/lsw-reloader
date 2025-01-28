@@ -1,9 +1,11 @@
 module.exports = function (outterOptions = {}) {
 
-  const options = Object.assign({
-    directory: dir,
-    port: port,
-  }, outterOptions);
+  const defaultOptions = {
+    directory: process.cwd(),
+    port: 3000,
+    filter: () => true,
+  };
+  const options = Object.assign(defaultOptions, outterOptions);
 
   const express = require('express');
   const http = require('http');
@@ -31,12 +33,9 @@ module.exports = function (outterOptions = {}) {
   });
 
   const directorioActual = options.directory;
-  const patrones = ['**/*.js', '**/*.css', '**/*.xml', '**/*.html'];
-  const patronesEscuchados = patrones.map(pat => path.join(directorioActual, pat));
+  console.log("[*] Escuchando:", directorioActual);
 
-  console.log("[*] Escuchando:", patronesEscuchados);
-
-  const watcher = chokidar.watch(".", {
+  const watcher = chokidar.watch(directorioActual, {
     persistent: true,
     ignoreInitial: false,
     depth: Infinity,
@@ -45,9 +44,23 @@ module.exports = function (outterOptions = {}) {
   });
   
   watcher.on('change', (ruta) => {
+    
     if (ruta.includes("/dist/")) {
       return;
     }
+
+    if (ruta.includes("/node_modules/")) {
+      return;
+    }
+
+    if (ruta.includes("/.git/")) {
+      return;
+    }
+
+    if(!options.filter(ruta)) {
+      return;
+    }
+
     console.log(`Cambios han habido en el archivo: ${ruta}`);
     io.emit("refrescar");
   });
